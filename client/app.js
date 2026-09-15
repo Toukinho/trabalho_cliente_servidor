@@ -32,13 +32,18 @@ async function carregarArquivos() {
 // Ler conteudo de um arquivo
 async function abrirArquivo(nome) {
   try {
-    const resposta = await fetch(`${API_URL}/files/${nome}`);
-    const conteudo = await resposta.text();
-    
+    const resposta = await fetch(`${API_URL}/files/${encodeURIComponent(nome)}`);
+    const dados = await resposta.json();
+
+    if (!resposta.ok) {
+      alert(dados.error || 'Erro ao abrir o arquivo!');
+      return;
+    }
+
     arquivoSelecionado = nome;
     inputNome.value = nome;
     inputNome.disabled = true;
-    inputConteudo.value = conteudo;
+    inputConteudo.value = dados.content;
     
     statusModo.textContent = 'Modo: Editando';
     btnExcluir.style.display = 'inline-block';
@@ -60,7 +65,7 @@ async function salvarArquivo() {
   try {
     if (arquivoSelecionado) {
       // Editar (PUT)
-      await fetch(`${API_URL}/files/${arquivoSelecionado}`, {
+      await fetch(`${API_URL}/files/${encodeURIComponent(arquivoSelecionado)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: conteudo })
@@ -87,7 +92,7 @@ async function excluirArquivo() {
 
   if (confirm('Tem certeza que quer apagar este arquivo?')) {
     try {
-      await fetch(`${API_URL}/files/${arquivoSelecionado}`, {
+      await fetch(`${API_URL}/files/${encodeURIComponent(arquivoSelecionado)}`, {
         method: 'DELETE'
       });
       alert('Arquivo apagado!');
